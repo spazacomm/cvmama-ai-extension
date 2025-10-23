@@ -1,0 +1,62 @@
+{
+    "manifest_version": 3,
+    "name": "cvmama Job Assistant",
+    "version": "1.3.2",
+    "description": "AI-powered resume optimization and job tracking for LinkedIn and job boards",
+    "permissions": [
+      "storage",
+      "activeTab",
+      "scripting",
+      "notifications",
+      "alarms",
+      "tabs"
+    ],
+    "host_permissions": [
+      "https://www.linkedin.com/*",
+      "https://linkedin.com/*",
+      "https://*.indeed.com/*",
+      "https://*.glassdoor.com/*",
+      "https://*.monster.com/*",
+      "https://cvmama.co.ke/*"
+    ],
+    "background": {
+      "service_worker": "background.js",
+      "type": "module"
+    },
+    "content_scripts": [
+      {
+        "matches": [
+          "https://www.linkedin.com/jobs/*",
+          "https://linkedin.com/jobs/*",
+          "https://*.indeed.com/*",
+          "https://*.glassdoor.com/*",
+          "https://*.monster.com/*"
+        ],
+        "js": ["content.js"],
+        "css": ["content.css"],
+        "run_at": "document_idle",
+        "type": "module"
+      }
+    ],
+    "action": {
+      "default_icon": {
+        "16": "icons/cvmama16.ico",
+        "32": "icons/cvmama32.ico",
+        "48": "icons/cvmama48.ico",
+        "128": "icons/cvmama128.ico"
+      }
+    },
+    "icons": {
+      "16": "icons/cvmama16.ico",
+      "32": "icons/cvmama32.ico",
+      "48": "icons/cvmama48.ico",
+      "128": "icons/cvmama128.ico"
+    },
+    "web_accessible_resources": [
+      {
+        "resources": ["icons/*", "content.css", "popup.html"],
+        "matches": ["<all_urls>"]
+      }
+    ]
+  }
+  

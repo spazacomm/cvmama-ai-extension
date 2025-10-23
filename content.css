@@ -1,0 +1,548 @@
+/* CV Mama Chrome Extension Styles - CVMama.co.ke inspired */
+
+:root {
+    --cvmama-primary: #6BB4C9;
+    --cvmama-primary-dark: #6BB4C9;
+    --cvmama-secondary: #10B981;
+    --cvmama-accent: #F59E0B;
+    --cvmama-danger: #EF4444;
+    --cvmama-text: #1F2937;
+    --cvmama-text-light: #6B7280;
+    --cvmama-border: #E5E7EB;
+    --cvmama-bg: #FFFFFF;
+    --cvmama-bg-light: #F9FAFB;
+    --cvmama-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --cvmama-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Action Buttons Container */
+  .cvmama-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    align-items: center;
+    z-index: 9999;
+  }
+  
+  .cvmama-actions-detail {
+    margin: 16px 0;
+    padding: 16px;
+    background: var(--cvmama-bg-light);
+    border-radius: 8px;
+  }
+  
+  .cvmama-detail-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-start;
+  }
+  
+  /* Buttons */
+  .cvmama-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  
+  .cvmama-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .cvmama-btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  
+  .cvmama-btn-primary {
+    background: var(--cvmama-primary);
+    color: white;
+  }
+  
+  .cvmama-btn-primary:hover:not(:disabled) {
+    background: var(--cvmama-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--cvmama-shadow);
+  }
+  
+  .cvmama-btn-secondary {
+    background: white;
+    color: var(--cvmama-text);
+    border: 1px solid var(--cvmama-border);
+  }
+  
+  .cvmama-btn-secondary:hover:not(:disabled) {
+    background: var(--cvmama-bg-light);
+    border-color: var(--cvmama-primary);
+    color: var(--cvmama-primary);
+  }
+  
+  .cvmama-btn-save {
+    background: white;
+    color: var(--cvmama-text);
+    border: 1px solid var(--cvmama-border);
+  }
+  
+  .cvmama-btn-save:hover:not(:disabled) {
+    background: var(--cvmama-accent);
+    color: white;
+    border-color: var(--cvmama-accent);
+  }
+  
+  .cvmama-btn-saved {
+    background: var(--cvmama-accent);
+    color: white;
+    border-color: var(--cvmama-accent);
+  }
+  
+  .cvmama-btn-scan {
+    background: var(--cvmama-primary);
+    color: white;
+  }
+  
+  .cvmama-btn-scan:hover:not(:disabled) {
+    background: var(--cvmama-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--cvmama-shadow);
+  }
+  
+  .cvmama-btn-scanned {
+    background: var(--cvmama-secondary);
+    color: white;
+  }
+  
+  /* Spinner */
+  .cvmama-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: cvmama-spin 0.6s linear infinite;
+  }
+  
+  @keyframes cvmama-spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  /* Floating Prompt */
+  .cvmama-floating-prompt {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 380px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--cvmama-shadow-lg);
+    z-index: 999999;
+    animation: cvmama-slide-in 0.3s ease-out;
+  }
+  
+  @keyframes cvmama-slide-in {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  .cvmama-prompt-content {
+    padding: 20px;
+  }
+  
+  .cvmama-prompt-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  
+  .cvmama-prompt-logo {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .cvmama-prompt-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--cvmama-text);
+    flex: 1;
+  }
+  
+  .cvmama-prompt-close {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: var(--cvmama-bg-light);
+    color: var(--cvmama-text-light);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+  
+  .cvmama-prompt-close:hover {
+    background: var(--cvmama-danger);
+    color: white;
+  }
+  
+  .cvmama-prompt-body p {
+    margin: 0 0 16px;
+    color: var(--cvmama-text-light);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  
+  .cvmama-prompt-body button {
+    width: 100%;
+  }
+  
+  /* Modal */
+  .cvmama-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .cvmama-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+  }
+  
+  .cvmama-modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 600px;
+    max-height: 85vh;
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--cvmama-shadow-lg);
+    display: flex;
+    flex-direction: column;
+    animation: cvmama-modal-in 0.3s ease-out;
+  }
+  
+  @keyframes cvmama-modal-in {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  .cvmama-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px;
+    border-bottom: 1px solid var(--cvmama-border);
+  }
+  
+  .cvmama-modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--cvmama-text);
+  }
+  
+  .cvmama-modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--cvmama-text-light);
+    cursor: pointer;
+    font-size: 24px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+  }
+  
+  .cvmama-modal-close:hover {
+    background: var(--cvmama-bg-light);
+    color: var(--cvmama-danger);
+  }
+  
+  .cvmama-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  
+  .cvmama-scan-header {
+    margin-bottom: 24px;
+  }
+  
+  .cvmama-scan-header h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--cvmama-text);
+  }
+  
+  .cvmama-company {
+    margin: 0;
+    color: var(--cvmama-text-light);
+    font-size: 14px;
+  }
+  
+  .cvmama-score-card {
+    background: linear-gradient(135deg, var(--cvmama-primary) 0%, var(--cvmama-primary-dark) 100%);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .cvmama-score-circle {
+    text-align: center;
+    color: white;
+  }
+  
+  .cvmama-score-value {
+    display: block;
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  
+  .cvmama-score-value::after {
+    content: '%';
+    font-size: 24px;
+    margin-left: 4px;
+  }
+  
+  .cvmama-score-label {
+    display: block;
+    font-size: 14px;
+    opacity: 0.9;
+    font-weight: 500;
+  }
+  
+  .cvmama-scan-details {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .cvmama-result-section h4 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--cvmama-text);
+  }
+  
+  .cvmama-progress-bar {
+    height: 8px;
+    background: var(--cvmama-bg-light);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  
+  .cvmama-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cvmama-primary) 0%, var(--cvmama-secondary) 100%);
+    transition: width 0.6s ease;
+  }
+  
+  .cvmama-missing {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--cvmama-text-light);
+  }
+  
+  .cvmama-recommendations {
+    margin: 0;
+    padding-left: 20px;
+  }
+  
+  .cvmama-recommendations li {
+    margin-bottom: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--cvmama-text);
+  }
+  
+  .cvmama-modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--cvmama-border);
+  }
+  
+  .cvmama-modal-actions button {
+    flex: 1;
+  }
+  
+  /* Notifications */
+  .cvmama-notification {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--cvmama-shadow-lg);
+    padding: 16px 20px;
+    z-index: 999999;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+    min-width: 300px;
+    max-width: 400px;
+  }
+  
+  .cvmama-notification-show {
+    transform: translateX(0);
+  }
+  
+  .cvmama-notification-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .cvmama-notification-content::before {
+    font-size: 20px;
+    font-weight: 700;
+  }
+  
+  .cvmama-notification-success {
+    border-left: 4px solid var(--cvmama-secondary);
+    color: var(--cvmama-secondary);
+  }
+  
+  .cvmama-notification-error {
+    border-left: 4px solid var(--cvmama-danger);
+    color: var(--cvmama-danger);
+  }
+  
+  .cvmama-notification-info {
+    border-left: 4px solid var(--cvmama-primary);
+    color: var(--cvmama-primary);
+  }
+  
+  .cvmama-notification-content span {
+    color: var(--cvmama-text);
+    flex: 1;
+  }
+  
+  /* LinkedIn Specific Overrides */
+  .jobs-search-results__list-item .cvmama-actions {
+    padding: 8px 16px 0;
+  }
+  
+  .job-card-container .cvmama-actions {
+    padding: 8px 0 0;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .cvmama-floating-prompt {
+      width: calc(100% - 48px);
+      max-width: 380px;
+    }
+  
+    .cvmama-modal-content {
+      width: 95%;
+      max-height: 90vh;
+    }
+  
+    .cvmama-notification {
+      right: 12px;
+      left: 12px;
+      min-width: auto;
+    }
+  }
+
+
+  .cvmama-detail-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .cvmama-logo-container {
+    flex-shrink: 0;
+  }
+  
+  .cvmama-logo {
+    height: 32px; /* Adjust size as needed */
+    width: auto;
+    display: block;
+  }
+  
+  .cvmama-actions-buttons {
+    display: flex;
+    gap: 12px;
+    flex: 1;
+  }
+
+
+  #cvmama-sidepanel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 400px;
+    height: 100vh;
+    background: #fff;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.15);
+    z-index: 999999;
+    animation: slideIn 0.3s ease forwards;
+  }
+  
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  
+  

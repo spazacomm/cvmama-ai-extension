@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CV Mama Job Assistant</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 400px;
+      min-height: 500px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #F9FAFB;
+      color: #1F2937;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #6BB4C9 0%, #6BB4C9 100%);
+      padding: 24px 20px;
+      color: white;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      margin-bottom: 3px;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      background: white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #6BB4C9;
+      font-size: 18px;
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .header-subtitle {
+      font-size: 13px;
+      opacity: 0.9;
+      margin-left: 52px;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    .section {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #1F2937;
+    }
+
+    .upload-area {
+      border: 2px dashed #E5E7EB;
+      border-radius: 8px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .upload-area:hover {
+      border-color: #6BB4C9;
+      background: #F9FAFB;
+    }
+
+    .upload-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 12px;
+      background: #EEF2FF;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6BB4C9;
+    }
+
+    .upload-text {
+      font-size: 14px;
+      color: #6B7280;
+      margin-bottom: 8px;
+    }
+
+    .upload-formats {
+      font-size: 12px;
+      color: #9CA3AF;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: #F28C7A;
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #e07b69;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #1F2937;
+      border: 1px solid #E5E7EB;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #F9FAFB;
+      border-color: #F28C7A;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .processing-state {
+      text-align: center;
+      padding: 32px 20px;
+    }
+
+    .processing-spinner {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 20px;
+      border: 4px solid #E5E7EB;
+      border-top-color: #6BB4C9;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .processing-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1F2937;
+      margin-bottom: 8px;
+    }
+
+    .processing-text {
+      font-size: 13px;
+      color: #6B7280;
+      margin-bottom: 16px;
+    }
+
+    .profile-info {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px;
+      background: #F0FDF4;
+      border: 1px solid #BBF7D0;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .profile-icon {
+      width: 48px;
+      height: 48px;
+      background: #10B981;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      flex-shrink: 0;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .profile-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .profile-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #065F46;
+      margin-bottom: 4px;
+    }
+
+    .profile-email {
+      font-size: 13px;
+      color: #059669;
+      margin-bottom: 8px;
+    }
+
+    .profile-stats {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: #065F46;
+    }
+
+    .profile-stat {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .highlight-card {
+      background: #F9FAFB;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .highlight-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #6B7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .highlight-value {
+      font-size: 13px;
+      color: #1F2937;
+      line-height: 1.5;
+    }
+
+    .highlight-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .highlight-list li {
+      padding: 4px 0;
+      font-size: 13px;
+      color: #1F2937;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .highlight-list li:before {
+      content: "•";
+      color: #6BB4C9;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.6s linear infinite;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .alert-success {
+      background: #F0FDF4;
+      color: #065F46;
+      border: 1px solid #BBF7D0;
+    }
+
+    .alert-error {
+      background: #FEF2F2;
+      color: #991B1B;
+      border: 1px solid #FECACA;
+    }
+
+    .alert-info {
+      background: #EFF6FF;
+      color: #1E40AF;
+      border: 1px solid #BFDBFE;
+    }
+
+    .alert-warning {
+      background: #FFFBEB;
+      color: #92400E;
+      border: 1px solid #FDE68A;
+    }
+
+    .footer {
+      padding: 16px 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #6B7280;
+      border-top: 1px solid #E5E7EB;
+    }
+
+    .footer a {
+      color: #6BB4C9;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .progress-step {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+
+    .progress-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background: #E5E7EB;
+      z-index: -1;
+    }
+
+    .progress-step.active:not(:last-child)::after {
+      background: #6BB4C9;
+    }
+
+    .progress-step-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #E5E7EB;
+      color: #6B7280;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .progress-step.active .progress-step-circle {
+      background: #6BB4C9;
+      color: white;
+    }
+
+    .progress-step.completed .progress-step-circle {
+      background: #10B981;
+      color: white;
+    }
+
+    .progress-step-label {
+      font-size: 11px;
+      color: #6B7280;
+    }
+
+    .progress-step.active .progress-step-label {
+      color: #1F2937;
+      font-weight: 500;
+    }
+
+   
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-top">
+      <div class="logo">
+        <img src="https://cvmama.co.ke/cvmama-logo-color.png" alt="cvmama" class="cvmama-logo">
+      </div>
+    </div>
+    <div class="header-subtitle">AI-Powered Resume Optimization</div>
+  </div>
+
+  <div class="container">
+    <!-- Alert Area -->
+    <div id="alertArea"></div>
+
+    <!-- Step 1: Upload Resume (First Time Users) -->
+    <div id="uploadResumeState" class="hidden">
+      <div class="section">
+        <h3 class="section-title">Welcome! Let's Get Started</h3>
+        <p style="font-size: 13px; color: #6B7280; margin-bottom: 16px;">
+          Upload your resume to create your profile and unlock AI-powered job matching.
+        </p>
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </div>
+          <div class="upload-text">Click to upload or drag and drop</div>
+          <div class="upload-formats">PDF, DOCX (Max 5MB)</div>
+        </div>
+        <input type="file" id="resumeFileInput" accept=".pdf,.docx,.doc" style="display: none;">
+        <button class="btn btn-primary" id="uploadBtn" style="margin-top: 16px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Upload Resume
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Profile Creation in Progress -->
+    <div id="profileCreatingState" class="hidden">
+      <div class="section">
+        <div class="progress-steps">
+          <div class="progress-step completed">
+            <div class="progress-step-circle">✓</div>
+            <div class="progress-step-label">Uploaded</div>
+          </div>
+          <div class="progress-step active">
+            <div class="progress-step-circle">2</div>
+            <div class="progress-step-label">Creating Profile</div>
+          </div>
+          <div class="progress-step">
+            <div class="progress-step-circle">3</div>
+            <div class="progress-step-label">Ready</div>
+          </div>
+        </div>
+        
+        <div class="processing-state">
+          <div class="processing-spinner"></div>
+          <div class="processing-title">Creating Your Profile</div>
+          <div class="processing-text">
+            Please wait while we set up your account...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Profile Processing -->
+    <div id="profileProcessingState" class="hidden">
+      <div class="section">
+        <div class="progress-steps">
+          <div class="progress-step completed">
+            <div class="progress-step-circle">✓</div>
+            <div class="progress-step-label">Uploaded</div>
+          </div>
+          <div class="progress-step completed">
+            <div class="progress-step-circle">✓</div>
+            <div class="progress-step-label">Profile Created</div>
+          </div>
+          <div class="progress-step active">
+            <div class="progress-step-circle">3</div>
+            <div class="progress-step-label">Processing</div>
+          </div>
+        </div>
+        
+        <div class="processing-state">
+          <div class="processing-spinner"></div>
+          <div class="processing-title">Processing Your Resume</div>
+          <div class="processing-text">
+            Our AI is analyzing your resume. This may take a minute...
+          </div>
+          <button class="btn btn-secondary" id="refreshProcessingBtn" style="max-width: 200px; margin: 0 auto;">
+            Check Status
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Profile Ready with Extracted Data -->
+    <div id="profileReadyState" class="hidden">
+      <div class="profile-info">
+        <div class="profile-icon" id="profileInitials">JD</div>
+        <div class="profile-details">
+          <div class="profile-name" id="profileName">John Doe</div>
+          <div class="profile-email" id="profileEmail">john@example.com</div>
+          <div class="profile-stats">
+            <div class="profile-stat">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span id="profileTitle">Software Engineer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title">Profile Highlights</h3>
+        
+        <div class="highlight-card">
+          <div class="highlight-label">Experience</div>
+          <div class="highlight-value" id="highlightExperience">5+ years</div>
+        </div>
+
+        <div class="highlight-card">
+          <div class="highlight-label">Top Skills</div>
+          <ul class="highlight-list" id="highlightSkills">
+            <li>JavaScript, React, Node.js</li>
+            <li>Python, Django</li>
+            <li>AWS, Docker</li>
+          </ul>
+        </div>
+
+        <div class="highlight-card">
+          <div class="highlight-label">Education</div>
+          <div class="highlight-value" id="highlightEducation">BS Computer Science</div>
+        </div>
+
+        <div class="action-buttons">
+          <button class="btn btn-primary" id="getMatchScoreBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            Match Score
+          </button>
+          <button class="btn btn-secondary" id="optimizeResumeBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Optimize
+          </button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title">Quick Actions</h3>
+        <button class="btn btn-secondary" id="viewDashboardBtn" style="margin-bottom: 12px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="9" y1="3" x2="9" y2="21"></line>
+          </svg>
+          View Full Dashboard
+        </button>
+        <button class="btn btn-secondary" id="updateResumeBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Update Resume
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Powered by <a href="https://cvmama.co.ke" target="_blank">CV Mama</a>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
