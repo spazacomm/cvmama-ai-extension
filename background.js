@@ -47,6 +47,13 @@ class CVMamaBackground {
         this.checkPendingOptimizations();
       }
     });
+
+    //open side panel:
+    chrome.action.onClicked.addListener(async (tab) => {
+      // Send a message to the active tab to toggle the side panel
+      chrome.tabs.sendMessage(tab.id, { action: "togglePanel" });
+      
+    });
   }
 
   async handleMessage(message, sender) {

@@ -45,7 +45,7 @@
       this.floatingButton.id = 'cvmama-floating-container';
       this.floatingButton.innerHTML = `
         <div class="cvmama-floating-btn" id="cvmama-main-btn">
-          <img src="${chrome.runtime.getURL('images/icon48.png')}" alt="CV Mama" class="cvmama-floating-icon">
+          <img src="${chrome.runtime.getURL('images/logo-white.png')}" alt="cvmama" class="cvmama-floating-icon">
         </div>
         <div class="cvmama-floating-menu" id="cvmama-floating-menu">
           <button class="cvmama-menu-btn" id="cvmama-scan-btn">
@@ -159,7 +159,7 @@
 
     detectLinkedInJob() {
       // Check if we're on a job details page
-      const isJobPage = window.location.pathname.includes('/jobs/view/');
+      const isJobPage = window.location.pathname.includes('/jobs/');
       
       if (isJobPage) {
         this.currentJob = this.extractLinkedInJobData();
@@ -426,6 +426,30 @@
       }
     }
     return true;
+  });
+
+// ======================= Left Panel ==============
+
+  let panel;
+
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message.action === "togglePanel") {
+      if (panel) {
+        panel.remove();
+        panel = null;
+        return;
+      }
+  
+      panel = document.createElement("div");
+      panel.id = "cvmama-sidepanel";
+      panel.innerHTML = `
+        <iframe
+          src="${chrome.runtime.getURL("popup.html")}"
+          style="border:none;width:100%;height:100%;"
+        ></iframe>
+      `;
+      document.body.appendChild(panel);
+    }
   });
 
   // ==================== Initialize ====================
