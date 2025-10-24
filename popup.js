@@ -427,7 +427,7 @@ class CVMamaPopup {
   }
 
   showState(stateName) {
-    const states = ['upload', 'processing', 'noJob', 'jobAnalysis', 'matchResult'];
+    const states = ['upload', 'processing', 'noJob', 'jobAnalysis', 'matchResult', 'profileReady'];
     states.forEach(state => {
       const element = document.getElementById(`${state}State`);
       if (element) {
