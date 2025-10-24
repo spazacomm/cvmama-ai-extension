@@ -12,48 +12,51 @@
     }
 
     body {
-      width: 400px;
-      min-height: 500px;
+      width: 420px;
+      min-height: 550px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       background: #F9FAFB;
       color: #1F2937;
     }
 
     .header {
-      background: linear-gradient(135deg, #6BB4C9 0%, #6BB4C9 100%);
-      padding: 24px 20px;
+      background: linear-gradient(135deg, #6BB4C9 0%, #5AA3B8 100%);
+      padding: 20px;
       color: white;
     }
 
     .header-top {
       display: flex;
       align-items: center;
-      gap: 2px;
-      margin-bottom: 3px;
+      gap: 12px;
+      margin-bottom: 8px;
     }
 
     .logo {
       width: 40px;
       height: 40px;
       background: white;
-      border-radius: 8px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      color: #6BB4C9;
-      font-size: 18px;
+      overflow: hidden;
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
     .header h1 {
       font-size: 18px;
       font-weight: 600;
-      margin: 0;
     }
 
     .header-subtitle {
       font-size: 13px;
-      opacity: 0.9;
+      opacity: 0.95;
       margin-left: 52px;
     }
 
@@ -61,40 +64,28 @@
       padding: 20px;
     }
 
-    .section {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    .section-title {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      color: #1F2937;
-    }
-
+    /* Upload State */
     .upload-area {
-      border: 2px dashed #E5E7EB;
-      border-radius: 8px;
-      padding: 24px;
+      border: 2px dashed #D1D5DB;
+      border-radius: 12px;
+      padding: 32px 20px;
       text-align: center;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
+      background: white;
     }
 
     .upload-area:hover {
       border-color: #6BB4C9;
-      background: #F9FAFB;
+      background: #F0F9FF;
+      transform: translateY(-2px);
     }
 
     .upload-icon {
-      width: 48px;
-      height: 48px;
-      margin: 0 auto 12px;
-      background: #EEF2FF;
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 16px;
+      background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -103,50 +94,185 @@
     }
 
     .upload-text {
-      font-size: 14px;
-      color: #6B7280;
+      font-size: 15px;
+      color: #1F2937;
+      font-weight: 500;
       margin-bottom: 8px;
     }
 
     .upload-formats {
       font-size: 12px;
-      color: #9CA3AF;
+      color: #6B7280;
     }
 
+    /* Job Analysis State */
+    .job-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 1px solid #E5E7EB;
+    }
+
+    .job-header {
+      display: flex;
+      align-items: start;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .company-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #6BB4C9 0%, #5AA3B8 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .job-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .job-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1F2937;
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .job-company {
+      font-size: 14px;
+      color: #6B7280;
+      margin-bottom: 4px;
+    }
+
+    .job-location {
+      font-size: 12px;
+      color: #9CA3AF;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .job-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .meta-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: #F3F4F6;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #4B5563;
+    }
+
+    /* Match Score Display */
+    .match-result {
+      background: linear-gradient(135deg, #6BB4C9 0%, #5AA3B8 100%);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      color: white;
+      margin-bottom: 16px;
+    }
+
+    .match-score {
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .match-score::after {
+      content: '%';
+      font-size: 32px;
+      margin-left: 4px;
+    }
+
+    .match-label {
+      font-size: 14px;
+      opacity: 0.95;
+      font-weight: 500;
+    }
+
+    .match-details {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #F3F4F6;
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      font-size: 13px;
+      color: #6B7280;
+      font-weight: 500;
+    }
+
+    .detail-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1F2937;
+    }
+
+    .progress-bar {
+      flex: 1;
+      height: 6px;
+      background: #F3F4F6;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-left: 12px;
+      max-width: 120px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6BB4C9 0%, #10B981 100%);
+      transition: width 0.6s ease;
+      border-radius: 3px;
+    }
+
+    /* Buttons */
     .btn {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
       width: 100%;
-      padding: 12px 16px;
+      padding: 14px 20px;
       border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .btn-primary {
-      background: #F28C7A;
-      color: white;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      background: #e07b69;
-      transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-      background: white;
-      color: #1F2937;
-      border: 1px solid #E5E7EB;
-    }
-
-    .btn-secondary:hover:not(:disabled) {
-      background: #F9FAFB;
-      border-color: #F28C7A;
+      transition: all 0.3s ease;
     }
 
     .btn:disabled {
@@ -154,6 +280,41 @@
       cursor: not-allowed;
     }
 
+    .btn-primary {
+      background: linear-gradient(135deg, #F28C7A 0%, #E07B69 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(242, 140, 122, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(242, 140, 122, 0.4);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #1F2937;
+      border: 2px solid #E5E7EB;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      border-color: #6BB4C9;
+      color: #6BB4C9;
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: #6BB4C9;
+      border: 2px solid #6BB4C9;
+    }
+
+    .btn-outline:hover:not(:disabled) {
+      background: #6BB4C9;
+      color: white;
+    }
+
+    /* Processing State */
     .processing-state {
       text-align: center;
       padding: 32px 20px;
@@ -183,134 +344,17 @@
     .processing-text {
       font-size: 13px;
       color: #6B7280;
-      margin-bottom: 16px;
     }
 
-    .profile-info {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 16px;
-      background: #F0FDF4;
-      border: 1px solid #BBF7D0;
-      border-radius: 8px;
-      margin-bottom: 16px;
-    }
-
-    .profile-icon {
-      width: 48px;
-      height: 48px;
-      background: #10B981;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      flex-shrink: 0;
-      font-size: 20px;
-      font-weight: 600;
-    }
-
-    .profile-details {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .profile-name {
-      font-size: 15px;
-      font-weight: 600;
-      color: #065F46;
-      margin-bottom: 4px;
-    }
-
-    .profile-email {
-      font-size: 13px;
-      color: #059669;
-      margin-bottom: 8px;
-    }
-
-    .profile-stats {
-      display: flex;
-      gap: 12px;
-      font-size: 12px;
-      color: #065F46;
-    }
-
-    .profile-stat {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .highlight-card {
-      background: #F9FAFB;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 12px;
-    }
-
-    .highlight-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: #6B7280;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 6px;
-    }
-
-    .highlight-value {
-      font-size: 13px;
-      color: #1F2937;
-      line-height: 1.5;
-    }
-
-    .highlight-list {
-      list-style: none;
-      padding: 0;
-    }
-
-    .highlight-list li {
-      padding: 4px 0;
-      font-size: 13px;
-      color: #1F2937;
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-    }
-
-    .highlight-list li:before {
-      content: "•";
-      color: #6BB4C9;
-      font-weight: bold;
-      flex-shrink: 0;
-    }
-
-    .action-buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 16px;
-    }
-
-    .spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 0.6s linear infinite;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
+    /* Alert */
     .alert {
       padding: 12px 16px;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 13px;
       margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     .alert-success {
@@ -337,266 +381,279 @@
       border: 1px solid #FDE68A;
     }
 
+    /* Quick Links */
+    .quick-links {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .quick-link {
+      flex: 1;
+      padding: 12px;
+      background: white;
+      border: 1px solid #E5E7EB;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: #6B7280;
+    }
+
+    .quick-link:hover {
+      border-color: #6BB4C9;
+      color: #6BB4C9;
+      transform: translateY(-2px);
+    }
+
+    .quick-link-icon {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .quick-link-text {
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
     .footer {
       padding: 16px 20px;
       text-align: center;
       font-size: 12px;
-      color: #6B7280;
+      color: #9CA3AF;
       border-top: 1px solid #E5E7EB;
     }
 
     .footer a {
       color: #6BB4C9;
       text-decoration: none;
+      font-weight: 500;
     }
 
     .footer a:hover {
       text-decoration: underline;
     }
 
-    .progress-steps {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      position: relative;
-    }
-
-    .progress-step {
-      flex: 1;
-      text-align: center;
-      position: relative;
-    }
-
-    .progress-step:not(:last-child)::after {
-      content: '';
-      position: absolute;
-      top: 16px;
-      left: 50%;
-      width: 100%;
-      height: 2px;
-      background: #E5E7EB;
-      z-index: -1;
-    }
-
-    .progress-step.active:not(:last-child)::after {
-      background: #6BB4C9;
-    }
-
-    .progress-step-circle {
-      width: 32px;
-      height: 32px;
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%;
-      background: #E5E7EB;
-      color: #6B7280;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 8px;
-      font-size: 14px;
+      border-top-color: white;
+      animation: spin 0.6s linear infinite;
+    }
+
+    /* No Job State */
+    .no-job-state {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .no-job-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .no-job-title {
+      font-size: 16px;
       font-weight: 600;
-    }
-
-    .progress-step.active .progress-step-circle {
-      background: #6BB4C9;
-      color: white;
-    }
-
-    .progress-step.completed .progress-step-circle {
-      background: #10B981;
-      color: white;
-    }
-
-    .progress-step-label {
-      font-size: 11px;
-      color: #6B7280;
-    }
-
-    .progress-step.active .progress-step-label {
       color: #1F2937;
-      font-weight: 500;
+      margin-bottom: 8px;
     }
 
-   
+    .no-job-text {
+      font-size: 13px;
+      color: #6B7280;
+      line-height: 1.6;
+    }
   </style>
 </head>
 <body>
   <div class="header">
     <div class="header-top">
       <div class="logo">
-        <img src="https://cvmama.co.ke/cvmama-logo-color.png" alt="cvmama" class="cvmama-logo">
+        <img src="https://cvmama.co.ke/cvmama-logo-color.png" alt="CV Mama">
       </div>
+      <h1>CV Mama</h1>
     </div>
-    <div class="header-subtitle">AI-Powered Resume Optimization</div>
+    <div class="header-subtitle">AI-Powered Job Matching</div>
   </div>
 
   <div class="container">
-    <!-- Alert Area -->
     <div id="alertArea"></div>
 
-    <!-- Step 1: Upload Resume (First Time Users) -->
-    <div id="uploadResumeState" class="hidden">
-      <div class="section">
-        <h3 class="section-title">Welcome! Let's Get Started</h3>
-        <p style="font-size: 13px; color: #6B7280; margin-bottom: 16px;">
-          Upload your resume to create your profile and unlock AI-powered job matching.
-        </p>
-        <div class="upload-area" id="uploadArea">
-          <div class="upload-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="17 8 12 3 7 8"></polyline>
-              <line x1="12" y1="3" x2="12" y2="15"></line>
-            </svg>
-          </div>
-          <div class="upload-text">Click to upload or drag and drop</div>
-          <div class="upload-formats">PDF, DOCX (Max 5MB)</div>
-        </div>
-        <input type="file" id="resumeFileInput" accept=".pdf,.docx,.doc" style="display: none;">
-        <button class="btn btn-primary" id="uploadBtn" style="margin-top: 16px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <!-- Upload Resume State -->
+    <div id="uploadState" class="hidden">
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <polyline points="17 8 12 3 7 8"></polyline>
             <line x1="12" y1="3" x2="12" y2="15"></line>
           </svg>
-          Upload Resume
-        </button>
+        </div>
+        <div class="upload-text">Upload Your Resume</div>
+        <div class="upload-formats">PDF or DOCX • Max 5MB</div>
       </div>
+      <input type="file" id="fileInput" accept=".pdf,.docx,.doc" style="display: none;">
+      <button class="btn btn-primary" id="uploadBtn" style="margin-top: 16px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        Get Started
+      </button>
     </div>
 
-    <!-- Step 2: Profile Creation in Progress -->
-    <div id="profileCreatingState" class="hidden">
-      <div class="section">
-        <div class="progress-steps">
-          <div class="progress-step completed">
-            <div class="progress-step-circle">✓</div>
-            <div class="progress-step-label">Uploaded</div>
-          </div>
-          <div class="progress-step active">
-            <div class="progress-step-circle">2</div>
-            <div class="progress-step-label">Creating Profile</div>
-          </div>
-          <div class="progress-step">
-            <div class="progress-step-circle">3</div>
-            <div class="progress-step-label">Ready</div>
-          </div>
-        </div>
-        
-        <div class="processing-state">
-          <div class="processing-spinner"></div>
-          <div class="processing-title">Creating Your Profile</div>
-          <div class="processing-text">
-            Please wait while we set up your account...
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Step 3: Profile Processing -->
-    <div id="profileProcessingState" class="hidden">
-      <div class="section">
-        <div class="progress-steps">
-          <div class="progress-step completed">
-            <div class="progress-step-circle">✓</div>
-            <div class="progress-step-label">Uploaded</div>
-          </div>
-          <div class="progress-step completed">
-            <div class="progress-step-circle">✓</div>
-            <div class="progress-step-label">Profile Created</div>
-          </div>
-          <div class="progress-step active">
-            <div class="progress-step-circle">3</div>
-            <div class="progress-step-label">Processing</div>
-          </div>
-        </div>
-        
+    <!-- Processing State -->
+    <div id="processingState" class="hidden">
+      <div class="job-card">
         <div class="processing-state">
           <div class="processing-spinner"></div>
           <div class="processing-title">Processing Your Resume</div>
-          <div class="processing-text">
-            Our AI is analyzing your resume. This may take a minute...
-          </div>
-          <button class="btn btn-secondary" id="refreshProcessingBtn" style="max-width: 200px; margin: 0 auto;">
-            Check Status
-          </button>
+          <div class="processing-text">Our AI is analyzing your resume. This may take a moment...</div>
         </div>
       </div>
     </div>
 
-    <!-- Step 4: Profile Ready with Extracted Data -->
-    <div id="profileReadyState" class="hidden">
-      <div class="profile-info">
-        <div class="profile-icon" id="profileInitials">JD</div>
-        <div class="profile-details">
-          <div class="profile-name" id="profileName">John Doe</div>
-          <div class="profile-email" id="profileEmail">john@example.com</div>
-          <div class="profile-stats">
-            <div class="profile-stat">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
+    <!-- No Job Detected -->
+    <div id="noJobState" class="hidden">
+      <div class="no-job-state">
+        <div class="no-job-icon">🔍</div>
+        <div class="no-job-title">No Job Detected</div>
+        <div class="no-job-text">Navigate to a job posting on LinkedIn, Indeed, or Glassdoor to see your match score.</div>
+      </div>
+      <div class="quick-links">
+        <a href="#" class="quick-link" id="viewProfileLink">
+          <div class="quick-link-icon">👤</div>
+          <div class="quick-link-text">Profile</div>
+        </a>
+        <a href="#" class="quick-link" id="viewApplicationsLink">
+          <div class="quick-link-icon">📄</div>
+          <div class="quick-link-text">Applications</div>
+        </a>
+        <a href="#" class="quick-link" id="settingsLink">
+          <div class="quick-link-icon">⚙️</div>
+          <div class="quick-link-text">Settings</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Job Analysis Ready -->
+    <div id="jobAnalysisState" class="hidden">
+      <div class="job-card">
+        <div class="job-header">
+          <div class="company-icon" id="companyInitial">A</div>
+          <div class="job-info">
+            <div class="job-title" id="jobTitle">Software Engineer</div>
+            <div class="job-company" id="jobCompany">Acme Corp</div>
+            <div class="job-location" id="jobLocation">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
               </svg>
-              <span id="profileTitle">Software Engineer</span>
+              San Francisco, CA
+            </div>
+          </div>
+        </div>
+        <div class="job-meta" id="jobMeta">
+          <span class="meta-tag">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            Full-time
+          </span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="calculateMatchBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+        Calculate Match Score
+      </button>
+    </div>
+
+    <!-- Match Result -->
+    <div id="matchResultState" class="hidden">
+      <div class="job-card" style="padding: 16px;">
+        <div class="job-header" style="margin-bottom: 12px;">
+          <div class="company-icon" id="resultCompanyInitial" style="width: 40px; height: 40px; font-size: 16px;">A</div>
+          <div class="job-info">
+            <div class="job-title" id="resultJobTitle" style="font-size: 14px;">Software Engineer</div>
+            <div class="job-company" id="resultJobCompany" style="font-size: 12px;">Acme Corp</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="match-result">
+        <div class="match-score" id="matchScore">85</div>
+        <div class="match-label">Match Score</div>
+      </div>
+
+      <div class="match-details">
+        <div class="detail-row">
+          <span class="detail-label">Skills Match</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="detail-value" id="skillsScore">78%</span>
+            <div class="progress-bar">
+              <div class="progress-fill" id="skillsProgress" style="width: 78%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Experience</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="detail-value" id="experienceScore">92%</span>
+            <div class="progress-bar">
+              <div class="progress-fill" id="experienceProgress" style="width: 92%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Keywords</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="detail-value" id="keywordsScore">85%</span>
+            <div class="progress-bar">
+              <div class="progress-fill" id="keywordsProgress" style="width: 85%"></div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="section">
-        <h3 class="section-title">Profile Highlights</h3>
-        
-        <div class="highlight-card">
-          <div class="highlight-label">Experience</div>
-          <div class="highlight-value" id="highlightExperience">5+ years</div>
-        </div>
+      <button class="btn btn-primary" id="optimizeBtn" style="margin-bottom: 12px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+        Optimize Resume & Cover Letter
+      </button>
 
-        <div class="highlight-card">
-          <div class="highlight-label">Top Skills</div>
-          <ul class="highlight-list" id="highlightSkills">
-            <li>JavaScript, React, Node.js</li>
-            <li>Python, Django</li>
-            <li>AWS, Docker</li>
-          </ul>
-        </div>
+      <button class="btn btn-outline" id="viewReportBtn">
+        View Full Report
+      </button>
 
-        <div class="highlight-card">
-          <div class="highlight-label">Education</div>
-          <div class="highlight-value" id="highlightEducation">BS Computer Science</div>
-        </div>
-
-        <div class="action-buttons">
-          <button class="btn btn-primary" id="getMatchScoreBtn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-            </svg>
-            Match Score
-          </button>
-          <button class="btn btn-secondary" id="optimizeResumeBtn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-            Optimize
-          </button>
-        </div>
-      </div>
-
-      <div class="section">
-        <h3 class="section-title">Quick Actions</h3>
-        <button class="btn btn-secondary" id="viewDashboardBtn" style="margin-bottom: 12px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="9" y1="3" x2="9" y2="21"></line>
-          </svg>
-          View Full Dashboard
-        </button>
-        <button class="btn btn-secondary" id="updateResumeBtn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-          </svg>
-          Update Resume
-        </button>
+      <div class="quick-links">
+        <a href="#" class="quick-link" id="newMatchLink">
+          <div class="quick-link-icon">🔄</div>
+          <div class="quick-link-text">New Match</div>
+        </a>
+        <a href="#" class="quick-link" id="applicationsLink">
+          <div class="quick-link-icon">📋</div>
+          <div class="quick-link-text">Applications</div>
+        </a>
       </div>
     </div>
   </div>
@@ -605,6 +662,6 @@
     Powered by <a href="https://cvmama.co.ke" target="_blank">CV Mama</a>
   </div>
 
-  <script type="module" src="popup.js"></script>
+  <script type="module" src="popup-enhanced.js"></script>
 </body>
 </html>

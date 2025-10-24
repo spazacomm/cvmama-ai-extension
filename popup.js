@@ -1,112 +1,471 @@
-// Popup JavaScript for CV Mama Extension - Workflow Version
+// popup-enhanced.js - Improved and optimized popup logic
 
 import { SUPABASE_URL, SUPABASE_ANON_KEY, API_BASE_URL } from "./config.js";
 
 class CVMamaPopup {
   constructor() {
-    this.apiBaseUrl = API_BASE_URL;
-    this.supabaseUrl = SUPABASE_URL;
-    this.supabaseKey = SUPABASE_ANON_KEY;
-    this.profileId = null;
-    this.profile = null;
-    this.syncInterval = null;
+    this.config = {
+      supabaseUrl: SUPABASE_URL,
+      supabaseKey: SUPABASE_ANON_KEY,
+      apiBaseUrl: API_BASE_URL,
+      maxFileSize: 5 * 1024 * 1024, // 5MB
+      syncInterval: 5000, // 5 seconds
+      requestTimeout: 30000 // 30 seconds
+    };
+    
+    this.state = {
+      profileId: null,
+      profile: null,
+      currentJob: null,
+      matchResult: null,
+      syncIntervalId: null
+    };
+    
+    this.cache = new Map();
+    this.pendingRequests = new Map();
+    
     this.init();
   }
 
   async init() {
-    await this.checkProfileStatus();
-    this.setupEventListeners();
+    try {
+      await this.loadProfile();
+      await this.detectCurrentJob();
+      this.setupEventListeners();
+      this.updateUI();
+    } catch (error) {
+      console.error('Initialization error:', error);
+      this.showAlert('Failed to initialize extension', 'error');
+    }
   }
 
-  async checkProfileStatus() {
-    // Get profile ID from local storage
-    const { profileId } = await chrome.storage.local.get(['profileId']);
-    
-    if (!profileId) {
-      // New user - show upload state
-      this.showUploadState();
-      return;
-    }
-
-    this.profileId = profileId;
-
-    // Fetch profile from Supabase
+  // ==================== Profile Management ====================
+  
+  async loadProfile() {
     try {
-      const profile = await this.fetchProfile(profileId);
+      const stored = await chrome.storage.local.get(['profileId', 'profile']);
       
-      if (!profile) {
-        // Profile ID exists but profile not found - reset
-        await chrome.storage.local.remove(['profileId']);
-        this.showUploadState();
+      if (!stored.profileId) {
+        this.showState('upload');
         return;
       }
 
-      this.profile = profile;
-
-      // Check if profile has parsed data
-      if (!profile.parsed_json || Object.keys(profile.parsed_json).length === 0) {
-        // Profile exists but not processed yet
-        this.showProfileProcessingState();
-        this.startProfileSync();
+      this.state.profileId = stored.profileId;
+      
+      // Check cache first
+      const cacheKey = `profile-${stored.profileId}`;
+      if (this.cache.has(cacheKey)) {
+        this.state.profile = this.cache.get(cacheKey);
       } else {
-        // Profile is ready
-        this.showProfileReadyState();
-      }
-    } catch (error) {
-      console.error('Error checking profile status:', error);
-      this.showAlert('Error loading profile. Please try again.', 'error');
-      this.showUploadState();
-    }
-  }
-
-  async fetchProfile(profileId) {
-    const response = await fetch(
-      `${this.supabaseUrl}/rest/v1/profiles?id=eq.${profileId}&select=*`,
-      {
-        headers: {
-          'apikey': this.supabaseKey,
-          'Authorization': `Bearer ${this.supabaseKey}`
+        // Fetch from backend via background script
+        this.state.profile = await this.sendMessage({
+          type: 'GET_PROFILE',
+          profileId: stored.profileId
+        });
+        
+        if (this.state.profile) {
+          this.cache.set(cacheKey, this.state.profile);
         }
       }
-    );
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch profile');
+      // Check if profile is being processed
+      if (!this.state.profile || !this.state.profile.parsed_json || 
+          Object.keys(this.state.profile.parsed_json).length === 0) {
+        this.showState('processing');
+        this.startProfileSync();
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
+      throw error;
     }
-
-    const data = await response.json();
-    return data.length > 0 ? data[0] : null;
   }
 
-  setupEventListeners() {
-    // Upload area
-    const uploadArea = document.getElementById('uploadArea');
-    const fileInput = document.getElementById('resumeFileInput');
+  startProfileSync() {
+    if (this.state.syncIntervalId) {
+      clearInterval(this.state.syncIntervalId);
+    }
 
-    if (uploadArea) {
+    this.state.syncIntervalId = setInterval(async () => {
+      try {
+        const profile = await this.sendMessage({
+          type: 'SYNC_PROFILE',
+          profileId: this.state.profileId
+        });
+
+        if (profile && profile.parsed_json && 
+            Object.keys(profile.parsed_json).length > 0) {
+          this.state.profile = profile;
+          this.cache.set(`profile-${this.state.profileId}`, profile);
+          await chrome.storage.local.set({ profile });
+          
+          this.stopProfileSync();
+          this.showAlert('Resume processed successfully!', 'success');
+          await this.detectCurrentJob();
+          this.updateUI();
+        }
+      } catch (error) {
+        console.error('Sync error:', error);
+      }
+    }, this.config.syncInterval);
+  }
+
+  stopProfileSync() {
+    if (this.state.syncIntervalId) {
+      clearInterval(this.state.syncIntervalId);
+      this.state.syncIntervalId = null;
+    }
+  }
+
+  // ==================== Job Detection ====================
+  
+  async detectCurrentJob() {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      
+      if (!tab || !tab.url) {
+        this.state.currentJob = null;
+        return;
+      }
+
+      // Check if on supported job board
+      const jobBoards = ['linkedin.com', 'indeed.com', 'glassdoor.com', 'monster.com'];
+      const isJobBoard = jobBoards.some(board => tab.url.includes(board));
+
+      if (!isJobBoard) {
+        this.state.currentJob = null;
+        return;
+      }
+
+      // Extract job data from page
+      try {
+        const response = await chrome.tabs.sendMessage(tab.id, { 
+          type: 'EXTRACT_JOB_DATA' 
+        });
+
+        if (response && response.jobData) {
+          this.state.currentJob = response.jobData;
+        } else {
+          this.state.currentJob = null;
+        }
+      } catch (error) {
+        // Content script not loaded or no job detected
+        this.state.currentJob = null;
+      }
+    } catch (error) {
+      console.error('Error detecting job:', error);
+      this.state.currentJob = null;
+    }
+  }
+
+  // ==================== File Upload ====================
+  
+  async handleFileUpload(file) {
+    if (!this.validateFile(file)) return;
+
+    const button = document.getElementById('uploadBtn');
+    
+    try {
+      await this.withButtonLoading(button, 'Uploading...', async () => {
+        // Convert file to base64
+        const fileData = await this.fileToBase64(file);
+        
+        // Send to background script for upload
+        const result = await this.sendMessage({
+          type: 'UPLOAD_RESUME',
+          name: file.name,
+          data: fileData
+        });
+
+        if (!result.success) {
+          throw new Error(result.error || 'Upload failed');
+        }
+
+        this.state.profileId = result.profileId;
+        this.state.profile = result.profile;
+
+        await chrome.storage.local.set({
+          profileId: result.profileId,
+          profile: result.profile
+        });
+
+        this.showAlert('Resume uploaded successfully!', 'success');
+        this.showState('processing');
+        this.startProfileSync();
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      this.showAlert(error.message || 'Failed to upload resume', 'error');
+    }
+  }
+
+  validateFile(file) {
+    const allowedTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword'
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      this.showAlert('Please upload a PDF or DOCX file', 'error');
+      return false;
+    }
+
+    if (file.size > this.config.maxFileSize) {
+      this.showAlert('File size must be less than 5MB', 'error');
+      return false;
+    }
+
+    return true;
+  }
+
+  fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ==================== Match Score Calculation ====================
+  
+  async calculateMatchScore() {
+    if (!this.state.profile) {
+      this.showAlert('Profile not loaded', 'error');
+      return;
+    }
+
+    if (!this.state.currentJob) {
+      this.showAlert('No job detected on this page', 'warning');
+      return;
+    }
+
+    const button = document.getElementById('calculateMatchBtn');
+
+    try {
+      await this.withButtonLoading(button, 'Calculating...', async () => {
+        // Calculate match via background script
+        const result = await this.sendMessage({
+          type: 'CALCULATE_MATCH',
+          profileId: this.state.profileId,
+          jobData: this.state.currentJob
+        });
+
+        if (!result.success) {
+          throw new Error(result.error || 'Match calculation failed');
+        }
+
+        this.state.matchResult = result.data;
+        
+        // Store match result
+        await chrome.storage.local.set({ 
+          lastMatchResult: result.data,
+          lastMatchJob: this.state.currentJob
+        });
+
+        this.showState('matchResult');
+        this.populateMatchResult();
+      });
+    } catch (error) {
+      console.error('Match calculation error:', error);
+      this.showAlert(error.message || 'Failed to calculate match', 'error');
+    }
+  }
+
+  populateMatchResult() {
+    if (!this.state.matchResult || !this.state.currentJob) return;
+
+    // Job info
+    document.getElementById('resultJobTitle').textContent = this.state.currentJob.title || 'N/A';
+    document.getElementById('resultJobCompany').textContent = this.state.currentJob.company || 'N/A';
+    
+    const initial = (this.state.currentJob.company || 'C').charAt(0).toUpperCase();
+    document.getElementById('resultCompanyInitial').textContent = initial;
+
+    // Overall score
+    const overallScore = Math.round(this.state.matchResult.overall_score || 0);
+    document.getElementById('matchScore').textContent = overallScore;
+
+    // Detailed scores
+    const skills = Math.round(this.state.matchResult.skills_match?.score || 0);
+    const experience = Math.round(this.state.matchResult.experience_match?.score || 0);
+    const keywords = Math.round(this.state.matchResult.keywords_match?.score || 0);
+
+    document.getElementById('skillsScore').textContent = skills + '%';
+    document.getElementById('skillsProgress').style.width = skills + '%';
+
+    document.getElementById('experienceScore').textContent = experience + '%';
+    document.getElementById('experienceProgress').style.width = experience + '%';
+
+    document.getElementById('keywordsScore').textContent = keywords + '%';
+    document.getElementById('keywordsProgress').style.width = keywords + '%';
+  }
+
+  // ==================== Resume Optimization ====================
+  
+  async optimizeResume() {
+    if (!this.state.profile || !this.state.currentJob || !this.state.matchResult) {
+      this.showAlert('Missing required data for optimization', 'error');
+      return;
+    }
+
+    const button = document.getElementById('optimizeBtn');
+
+    try {
+      await this.withButtonLoading(button, 'Starting Optimization...', async () => {
+        // Create application entry and trigger optimization
+        const result = await this.sendMessage({
+          type: 'OPTIMIZE_RESUME',
+          profileId: this.state.profileId,
+          jobData: this.state.currentJob,
+          matchResult: this.state.matchResult
+        });
+
+        if (!result.success) {
+          throw new Error(result.error || 'Optimization failed');
+        }
+
+        // Store application ID
+        await chrome.storage.local.set({
+          currentApplication: result.data
+        });
+
+        this.showAlert('Optimization started! This may take 2-24 hours. You will be notified when ready.', 'success');
+        
+        // Open applications page
+        setTimeout(() => {
+          chrome.tabs.create({ 
+            url: chrome.runtime.getURL('applications.html')
+          });
+        }, 2000);
+      });
+    } catch (error) {
+      console.error('Optimization error:', error);
+      this.showAlert(error.message || 'Failed to start optimization', 'error');
+    }
+  }
+
+  // ==================== UI Management ====================
+  
+  updateUI() {
+    if (!this.state.profile) {
+      this.showState('upload');
+      return;
+    }
+
+    if (!this.state.profile.parsed_json || 
+        Object.keys(this.state.profile.parsed_json).length === 0) {
+      this.showState('processing');
+      return;
+    }
+
+    if (!this.state.currentJob) {
+      this.showState('noJob');
+      return;
+    }
+
+    // Check if we have a recent match for this job
+    if (this.state.matchResult && 
+        this.state.matchResult.job_id === this.state.currentJob.jobId) {
+      this.showState('matchResult');
+      this.populateMatchResult();
+      return;
+    }
+
+    this.showState('jobAnalysis');
+    this.populateJobInfo();
+  }
+
+  populateJobInfo() {
+    if (!this.state.currentJob) return;
+
+    const job = this.state.currentJob;
+
+    document.getElementById('jobTitle').textContent = job.title || 'N/A';
+    document.getElementById('jobCompany').textContent = job.company || 'N/A';
+    document.getElementById('jobLocation').innerHTML = `
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+        <circle cx="12" cy="10" r="3"></circle>
+      </svg>
+      ${job.location || 'Remote'}
+    `;
+
+    const initial = (job.company || 'C').charAt(0).toUpperCase();
+    document.getElementById('companyInitial').textContent = initial;
+
+    // Add meta tags if available
+    const metaContainer = document.getElementById('jobMeta');
+    metaContainer.innerHTML = '';
+
+    if (job.type) {
+      metaContainer.innerHTML += `
+        <span class="meta-tag">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          ${job.type}
+        </span>
+      `;
+    }
+
+    if (job.source) {
+      metaContainer.innerHTML += `
+        <span class="meta-tag">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+          </svg>
+          ${this.capitalizeFirst(job.source)}
+        </span>
+      `;
+    }
+  }
+
+  showState(stateName) {
+    const states = ['upload', 'processing', 'noJob', 'jobAnalysis', 'matchResult'];
+    states.forEach(state => {
+      const element = document.getElementById(`${state}State`);
+      if (element) {
+        element.classList.toggle('hidden', state !== stateName);
+      }
+    });
+  }
+
+  // ==================== Event Listeners ====================
+  
+  setupEventListeners() {
+    // Upload
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+
+    if (uploadArea && fileInput) {
       uploadArea.addEventListener('click', () => fileInput.click());
+      
       uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.style.borderColor = '#6BB4C9';
-        uploadArea.style.background = '#F9FAFB';
+        uploadArea.style.background = '#F0F9FF';
       });
+
       uploadArea.addEventListener('dragleave', () => {
-        uploadArea.style.borderColor = '#E5E7EB';
+        uploadArea.style.borderColor = '#D1D5DB';
         uploadArea.style.background = 'white';
       });
+
       uploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
-        uploadArea.style.borderColor = '#E5E7EB';
+        uploadArea.style.borderColor = '#D1D5DB';
         uploadArea.style.background = 'white';
         
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-          this.handleFileUpload(files[0]);
+        if (e.dataTransfer.files.length > 0) {
+          this.handleFileUpload(e.dataTransfer.files[0]);
         }
       });
-    }
 
-    if (fileInput) {
       fileInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
           this.handleFileUpload(e.target.files[0]);
@@ -114,500 +473,202 @@ class CVMamaPopup {
       });
     }
 
-    // Upload button
-    const uploadBtn = document.getElementById('uploadBtn');
     if (uploadBtn) {
       uploadBtn.addEventListener('click', () => fileInput.click());
     }
 
-    // Refresh processing button
-    const refreshBtn = document.getElementById('refreshProcessingBtn');
-    if (refreshBtn) {
-      refreshBtn.addEventListener('click', () => this.checkProfileStatus());
+    // Calculate match
+    const calculateBtn = document.getElementById('calculateMatchBtn');
+    if (calculateBtn) {
+      calculateBtn.addEventListener('click', () => this.calculateMatchScore());
     }
 
-    // Action buttons
-    const matchScoreBtn = document.getElementById('getMatchScoreBtn');
-    if (matchScoreBtn) {
-      matchScoreBtn.addEventListener('click', () => this.getMatchScore());
-    }
-
-    const optimizeBtn = document.getElementById('optimizeResumeBtn');
+    // Optimize
+    const optimizeBtn = document.getElementById('optimizeBtn');
     if (optimizeBtn) {
       optimizeBtn.addEventListener('click', () => this.optimizeResume());
     }
 
-    const dashboardBtn = document.getElementById('viewDashboardBtn');
-    if (dashboardBtn) {
-      dashboardBtn.addEventListener('click', () => {
-        chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
+    // View report
+    const viewReportBtn = document.getElementById('viewReportBtn');
+    if (viewReportBtn) {
+      viewReportBtn.addEventListener('click', () => {
+        chrome.tabs.create({ 
+          url: chrome.runtime.getURL('report.html')
+        });
       });
     }
 
-    const updateResumeBtn = document.getElementById('updateResumeBtn');
-    if (updateResumeBtn) {
-      updateResumeBtn.addEventListener('click', () => fileInput.click());
-    }
-  }
-
-  async handleFileUpload(file) {
-    // Validate file
-    const allowedTypes = [
-      'application/pdf',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/msword'
-    ];
-    const maxSize = 5 * 1024 * 1024; // 5MB
-
-    if (!allowedTypes.includes(file.type)) {
-      this.showAlert('Please upload a PDF or DOCX file', 'error');
-      return;
-    }
-
-    if (file.size > maxSize) {
-      this.showAlert('File size must be less than 5MB', 'error');
-      return;
-    }
-
-    const uploadBtn = document.getElementById('uploadBtn');
-    if (uploadBtn) {
-      uploadBtn.disabled = true;
-      uploadBtn.innerHTML = '<span class="spinner"></span> Uploading...';
-    }
-
-    try {
-      // Step 1: Upload file to Supabase Storage
-      const filePath = `resumes/${Date.now()}-${file.name}`;
-      
-      const uploadResponse = await fetch(
-        `${this.supabaseUrl}/storage/v1/object/resumes/${filePath}`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${this.supabaseKey}`,
-            'apikey': this.supabaseKey
-          },
-          body: file
-        }
-      );
-
-      if (!uploadResponse.ok) {
-        const errorText = await uploadResponse.text();
-        throw new Error(`Upload failed: ${errorText}`);
-      }
-
-      const publicUrl = `${this.supabaseUrl}/storage/v1/object/public/resumes/${filePath}`;
-
-      this.showAlert('Resume uploaded successfully!', 'success');
-
-      // Step 2: Create profile in Supabase
-      await this.createProfile(file.name, publicUrl);
-
-    } catch (error) {
-      console.error('Error uploading resume:', error);
-      this.showAlert('Failed to upload resume. Please try again.', 'error');
-      
-      if (uploadBtn) {
-        uploadBtn.disabled = false;
-        uploadBtn.innerHTML = `
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-          </svg>
-          Upload Resume
-        `;
-      }
-    }
-  }
-
-  async createProfile(fileName, fileUrl) {
-    this.showProfileCreatingState();
-
-    try {
-      // Create profile entry
-      const profileData = {
-        file_url: fileUrl
-      };
-
-      const response = await fetch(`${this.supabaseUrl}/rest/v1/profiles`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': this.supabaseKey,
-          'Authorization': `Bearer ${this.supabaseKey}`,
-          'Prefer': 'return=representation'
-        },
-        body: JSON.stringify(profileData)
+    // Quick links
+    const viewProfileLink = document.getElementById('viewProfileLink');
+    if (viewProfileLink) {
+      viewProfileLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        chrome.tabs.create({ 
+          url: chrome.runtime.getURL('profile.html')
+        });
       });
+    }
 
-      if (!response.ok) {
-        throw new Error('Failed to create profile');
-      }
-
-      const profiles = await response.json();
-      const profile = profiles[0];
-
-      // Store profile ID in local storage
-      this.profileId = profile.id;
-      await chrome.storage.local.set({ 
-        profileId: profile.id,
-        profile: profile 
+    const viewApplicationsLink = document.getElementById('viewApplicationsLink');
+    if (viewApplicationsLink) {
+      viewApplicationsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        chrome.tabs.create({ 
+          url: chrome.runtime.getURL('applications.html')
+        });
       });
-
-      this.profile = profile;
-      this.showAlert('Profile created successfully!', 'success');
-
-      // Start background processing
-      await this.triggerProfileProcessing(profile.id, fileUrl);
-
-      // Show processing state
-      this.showProfileProcessingState();
-      this.startProfileSync();
-
-    } catch (error) {
-      console.error('Error creating profile:', error);
-      this.showAlert('Failed to create profile. Please try again.', 'error');
-      this.showUploadState();
     }
-  }
 
-  async triggerProfileProcessing(profileId, fileUrl) {
-    try {
-      // Send request to backend to process resume
-      const response = await fetch(`${this.apiBaseUrl}/process-resume`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          profile_id: profileId,
-          resume_url: fileUrl
-        })
+    const applicationsLink = document.getElementById('applicationsLink');
+    if (applicationsLink) {
+      applicationsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        chrome.tabs.create({ 
+          url: chrome.runtime.getURL('applications.html')
+        });
       });
+    }
 
-      if (!response.ok) {
-        console.error('Failed to trigger profile processing');
+    const newMatchLink = document.getElementById('newMatchLink');
+    if (newMatchLink) {
+      newMatchLink.addEventListener('click', async (e) => {
+        e.preventDefault();
+        this.state.matchResult = null;
+        await this.detectCurrentJob();
+        this.updateUI();
+      });
+    }
+
+    const settingsLink = document.getElementById('settingsLink');
+    if (settingsLink) {
+      settingsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        chrome.tabs.create({ 
+          url: chrome.runtime.getURL('settings.html')
+        });
+      });
+    }
+
+    // Listen for tab changes
+    chrome.tabs.onActivated.addListener(() => {
+      this.handleTabChange();
+    });
+
+    chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+      if (changeInfo.status === 'complete') {
+        this.handleTabChange();
       }
-
-      // Processing happens in background, no need to wait for response
-    } catch (error) {
-      console.error('Error triggering profile processing:', error);
-    }
+    });
   }
 
-  startProfileSync() {
-    // Stop any existing sync
-    if (this.syncInterval) {
-      clearInterval(this.syncInterval);
-    }
-
-    // Poll for profile updates every 5 seconds
-    this.syncInterval = setInterval(async () => {
-      try {
-        const profile = await this.fetchProfile(this.profileId);
-        
-        if (profile && profile.parsed_json && Object.keys(profile.parsed_json).length > 0) {
-          // Profile is now processed
-          this.profile = profile;
-          await chrome.storage.local.set({ profile: profile });
-          
-          // Stop syncing
-          clearInterval(this.syncInterval);
-          this.syncInterval = null;
-
-          // Show ready state
-          this.showProfileReadyState();
-          this.showAlert('Your resume has been processed!', 'success');
-        }
-      } catch (error) {
-        console.error('Error syncing profile:', error);
-      }
-    }, 5000);
+  async handleTabChange() {
+    this.state.currentJob = null;
+    this.state.matchResult = null;
+    await this.detectCurrentJob();
+    this.updateUI();
   }
 
-  stopProfileSync() {
-    if (this.syncInterval) {
-      clearInterval(this.syncInterval);
-      this.syncInterval = null;
-    }
-  }
-
-  showUploadState() {
-    this.hideAllStates();
-    document.getElementById('uploadResumeState').classList.remove('hidden');
-  }
-
-  showProfileCreatingState() {
-    this.hideAllStates();
-    document.getElementById('profileCreatingState').classList.remove('hidden');
-  }
-
-  showProfileProcessingState() {
-    this.hideAllStates();
-    document.getElementById('profileProcessingState').classList.remove('hidden');
-  }
-
-  showProfileReadyState() {
-    this.stopProfileSync();
-    this.hideAllStates();
-    document.getElementById('profileReadyState').classList.remove('hidden');
-
-    if (this.profile && this.profile.parsed_json) {
-      this.populateProfileData();
-    }
-  }
-
-  hideAllStates() {
-    document.getElementById('uploadResumeState').classList.add('hidden');
-    document.getElementById('profileCreatingState').classList.add('hidden');
-    document.getElementById('profileProcessingState').classList.add('hidden');
-    document.getElementById('profileReadyState').classList.add('hidden');
-  }
-
-  populateProfileData() {
-    const data = this.profile.parsed_json;
-
-    // Profile header
-    const name = data.basics.name || data.full_name || 'User';
-    const email = data.basics.email || data.contact?.email || '';
-    const title = data.basics.label || data.job_title || data.title || 'Professional';
-
-    document.getElementById('profileName').textContent = name;
-    document.getElementById('profileEmail').textContent = email;
-    document.getElementById('profileTitle').textContent = title;
-
-    // Profile initials
-    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-    document.getElementById('profileInitials').textContent = initials;
-
-    // Experience
-    let experience = 'N/A';
-    if (data.total_experience) {
-      experience = data.total_experience;
-    } else if (data.years_of_experience) {
-      experience = `${data.years_of_experience} years`;
-    } else if (data.work_experience && Array.isArray(data.work_experience)) {
-      experience = `${data.work_experience.length} positions`;
-    }
-    document.getElementById('highlightExperience').textContent = experience;
-
-    // Skills
-    const skillsList = document.getElementById('highlightSkills');
-    skillsList.innerHTML = '';
+  // ==================== Utility Functions ====================
+  
+  async sendMessage(message) {
+    const requestId = `${message.type}-${Date.now()}`;
     
-    let skills = [];
-    if (data.skills && Array.isArray(data.skills)) {
-      skills = data.skills.slice(0, 5);
-    } else if (data.technical_skills && Array.isArray(data.technical_skills)) {
-      skills = data.technical_skills.slice(0, 5);
-    } else if (data.top_skills && Array.isArray(data.top_skills)) {
-      skills = data.top_skills.slice(0, 5);
+    // Check for pending duplicate requests
+    if (this.pendingRequests.has(message.type)) {
+      return this.pendingRequests.get(message.type);
     }
 
-    if (skills.length > 0) {
-      skills.forEach(skill => {
-        const li = document.createElement('li');
-        li.textContent = typeof skill === 'string' ? skill : skill.name || skill.skill;
-        skillsList.appendChild(li);
+    const promise = new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        this.pendingRequests.delete(message.type);
+        reject(new Error('Request timeout'));
+      }, this.config.requestTimeout);
+
+      chrome.runtime.sendMessage(message, (response) => {
+        clearTimeout(timeout);
+        this.pendingRequests.delete(message.type);
+
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
+        }
+
+        if (response && response.error) {
+          reject(new Error(response.error));
+          return;
+        }
+
+        resolve(response);
       });
-    } else {
-      const li = document.createElement('li');
-      li.textContent = 'No skills extracted';
-      skillsList.appendChild(li);
-    }
+    });
 
-    // Education
-    let education = 'N/A';
-    if (data.education && Array.isArray(data.education) && data.education.length > 0) {
-      const latestEd = data.education[0];
-      education = `${latestEd.degree || latestEd.level || ''} ${latestEd.area || latestEd.study_type || ''}`.trim();
-      if (latestEd.institution) {
-        education += ` - ${latestEd.institution}`;
-      }
-    } else if (data.highest_education) {
-      education = data.highest_education;
-    }
-    document.getElementById('highlightEducation').textContent = education;
+    this.pendingRequests.set(message.type, promise);
+    return promise;
   }
 
-  async getMatchScore() {
-    if (!this.profile) {
-      this.showAlert('Profile not loaded', 'error');
-      return;
-    }
-
-    const btn = document.getElementById('getMatchScoreBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Calculating...';
+  async withButtonLoading(button, loadingText, operation) {
+    const originalHTML = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = `<span class="spinner"></span> ${loadingText}`;
 
     try {
-      // Get current tab URL to analyze job posting
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      
-      if (!tab || !tab.url) {
-        this.showAlert('Please open a job posting page', 'warning');
-        btn.disabled = false;
-        btn.innerHTML = `
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-          </svg>
-          Match Score
-        `;
-        return;
-      }
-
-      // Send message to content script to extract job data
-      const response = await chrome.tabs.sendMessage(tab.id, { 
-        type: 'EXTRACT_JOB_DATA' 
-      });
-
-      if (!response || !response.jobData) {
-        this.showAlert('Could not extract job data from this page', 'warning');
-        btn.disabled = false;
-        btn.innerHTML = `
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-          </svg>
-          Match Score
-        `;
-        return;
-      }
-
-      // Calculate match score via API
-      const matchResponse = await fetch(`${this.apiBaseUrl}/calculate-match`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          profile_id: this.profileId,
-          job_data: response.jobData
-        })
-      });
-
-      if (!matchResponse.ok) {
-        throw new Error('Failed to calculate match score');
-      }
-
-      const matchData = await matchResponse.json();
-
-      // Store and open dashboard
-      await chrome.storage.local.set({ lastMatchResult: matchData });
-      chrome.tabs.create({ 
-        url: chrome.runtime.getURL('dashboard.html?view=match-score')
-      });
-
-    } catch (error) {
-      console.error('Error calculating match score:', error);
-      this.showAlert('Failed to calculate match score', 'error');
+      return await operation();
     } finally {
-      btn.disabled = false;
-      btn.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-        </svg>
-        Match Score
-      `;
-    }
-  }
-
-  async optimizeResume() {
-    if (!this.profile) {
-      this.showAlert('Profile not loaded', 'error');
-      return;
-    }
-
-    const btn = document.getElementById('optimizeResumeBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Optimizing...';
-
-    try {
-      // Get current tab URL to analyze job posting
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      
-      if (!tab || !tab.url) {
-        // No job posting - do general optimization
-        chrome.tabs.create({ 
-          url: chrome.runtime.getURL('dashboard.html?view=optimize')
-        });
-        return;
-      }
-
-      // Send message to content script to extract job data
-      const response = await chrome.tabs.sendMessage(tab.id, { 
-        type: 'EXTRACT_JOB_DATA' 
-      });
-
-      if (!response || !response.jobData) {
-        // Could not extract - do general optimization
-        chrome.tabs.create({ 
-          url: chrome.runtime.getURL('dashboard.html?view=optimize')
-        });
-        return;
-      }
-
-      // Optimize for specific job
-      const optimizeResponse = await fetch(`${this.apiBaseUrl}/optimize-resume`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          profile_id: this.profileId,
-          job_data: response.jobData
-        })
-      });
-
-      if (!optimizeResponse.ok) {
-        throw new Error('Failed to optimize resume');
-      }
-
-      const optimizationData = await optimizeResponse.json();
-
-      // Store and open dashboard
-      await chrome.storage.local.set({ lastOptimization: optimizationData });
-      chrome.tabs.create({ 
-        url: chrome.runtime.getURL('dashboard.html?view=optimization')
-      });
-
-    } catch (error) {
-      console.error('Error optimizing resume:', error);
-      this.showAlert('Failed to optimize resume', 'error');
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-        </svg>
-        Optimize
-      `;
+      button.disabled = false;
+      button.innerHTML = originalHTML;
     }
   }
 
   showAlert(message, type = 'info') {
     const alertArea = document.getElementById('alertArea');
+    if (!alertArea) return;
+
+    const icons = {
+      success: '✓',
+      error: '✕',
+      warning: '⚠',
+      info: 'ℹ'
+    };
+
     const alert = document.createElement('div');
     alert.className = `alert alert-${type}`;
-    alert.textContent = message;
-    
+    alert.innerHTML = `
+      <span style="font-size: 16px; font-weight: 700;">${icons[type]}</span>
+      <span style="flex: 1;">${message}</span>
+    `;
+
     alertArea.appendChild(alert);
-    
+
     setTimeout(() => {
       alert.remove();
     }, 5000);
   }
+
+  capitalizeFirst(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  // ==================== Cleanup ====================
+  
+  cleanup() {
+    this.stopProfileSync();
+    this.cache.clear();
+    this.pendingRequests.clear();
+  }
 }
 
 // Initialize popup
+let popupInstance;
+
 document.addEventListener('DOMContentLoaded', () => {
-  new CVMamaPopup();
+  popupInstance = new CVMamaPopup();
 });
 
-// Clean up on unload
+// Cleanup on unload
 window.addEventListener('beforeunload', () => {
-  if (window.cvMamaPopup) {
-    window.cvMamaPopup.stopProfileSync();
+  if (popupInstance) {
+    popupInstance.cleanup();
   }
 });
