@@ -432,3 +432,27 @@
     background: linear-gradient(135deg, var(--cvmama-primary) 0%, var(--cvmama-primary-dark) 100%);
   }
 }
+
+
+
+
+#cvmama-sidepanel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.15);
+  z-index: 999999;
+  animation: slideIn 0.3s ease forwards;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
