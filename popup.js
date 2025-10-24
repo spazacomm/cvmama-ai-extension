@@ -360,6 +360,7 @@ class CVMamaPopup {
     }
 
     if (!this.state.currentJob) {
+      this.showState('profileReady');
       this.showState('noJob');
       return;
     }
@@ -367,11 +368,12 @@ class CVMamaPopup {
     // Check if we have a recent match for this job
     if (this.state.matchResult && 
         this.state.matchResult.job_id === this.state.currentJob.jobId) {
+          this.showState('profileReady');
       this.showState('matchResult');
       this.populateMatchResult();
       return;
     }
-
+    this.showState('profileReady');
     this.showState('jobAnalysis');
     this.populateJobInfo();
   }
