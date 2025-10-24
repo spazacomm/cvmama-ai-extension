@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "cvmama Job Assistant",
-    "version": "1.3.2",
+    "version": "1.4.0",
     "description": "AI-powered resume optimization and job tracking for LinkedIn and job boards",
     "permissions": [
       "storage",
